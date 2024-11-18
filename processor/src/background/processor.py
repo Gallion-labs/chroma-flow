@@ -10,18 +10,16 @@ class ImageProcessor:
         self.scenes_folder = Path(__file__).parents[3] / "data" / "scenes"
         if not self.scenes_folder.exists():
             raise Exception(f"Scenes folder not found: {self.scenes_folder}")
-        self.background_image = str(self.scenes_folder / "1.jpeg")
-        if not os.path.exists(self.background_image):
-            raise Exception(f"Default background image not found: {self.background_image}")
-        logging.info(f"Background image path: {self.background_image}")
+        
+        # Charger toutes les scènes disponibles
+        self.scenes = [str(f) for f in self.scenes_folder.glob("*.jp*g")]
+        if not self.scenes:
+            raise Exception("No scene files found in scenes folder")
+        logging.info(f"Found {len(self.scenes)} scene(s)")
 
-    def process(self, input_path: str, output_path: str) -> str:
+    def remove_background(self, input_path: str) -> Image.Image:
+        """Supprime le fond vert et retourne l'image sans fond"""
         try:
-            logging.info(f"Starting image processing: {input_path}")
-            
-            # Créer le dossier de sortie s'il n'existe pas
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            
             # Lire l'image avec Pillow
             input_image = Image.open(input_path)
             
@@ -31,38 +29,62 @@ class ImageProcessor:
             input_bytes = input_bytes.getvalue()
             
             # Supprimer le fond
-            output_bytes = remove(input_bytes)
+            output_bytes = remove(input_bytes, alpha_matting=True)
             
             # Reconvertir en image Pillow (avec canal alpha)
-            foreground = Image.open(io.BytesIO(output_bytes)).convert('RGBA')
-            logging.info(f"Foreground size: {foreground.size}, mode: {foreground.mode}")
+            return Image.open(io.BytesIO(output_bytes)).convert('RGBA')
             
-            # Charger et préparer l'image de fond
-            background = Image.open(self.background_image).convert('RGBA')
-            logging.info(f"Original background size: {background.size}, mode: {background.mode}")
+        except Exception as e:
+            logging.error(f"Failed to remove background: {str(e)}")
+            raise
+
+    def process_all_scenes(self, input_path: str, output_dir: str) -> list[str]:
+        processed_paths = []
+        
+        try:
+            # Supprimer le fond une seule fois
+            logging.info("Removing background...")
+            foreground = self.remove_background(input_path)
+            logging.info("Background removed successfully")
             
-            # Redimensionner le fond pour correspondre aux dimensions de l'image d'entrée
-            background = background.resize(foreground.size, Image.Resampling.LANCZOS)
-            logging.info(f"Resized background size: {background.size}")
-            
-            # Créer une nouvelle image pour le résultat
-            composite = Image.new('RGBA', foreground.size, (0, 0, 0, 0))
-            
-            # Coller d'abord le fond
-            composite.paste(background, (0, 0))
-            
-            # Puis coller le premier plan avec son masque alpha
-            composite.paste(foreground, (0, 0), foreground)
-            
-            # Convertir en RGB avant de sauvegarder (enlever la transparence)
-            composite = composite.convert('RGB')
-            
-            # Sauvegarder
-            composite.save(output_path, 'JPEG', quality=95)
-            
-            logging.info(f"Image processed and saved to: {output_path}")
-            return output_path
+            # Appliquer chaque scène
+            for i, scene_path in enumerate(self.scenes):
+                output_filename = f"processed_{i+1}_{os.path.basename(input_path)}"
+                output_path = os.path.join(output_dir, output_filename)
+                
+                try:
+                    self.apply_background(foreground, scene_path, output_path)
+                    processed_paths.append(output_path)
+                except Exception as e:
+                    logging.error(f"Failed to process scene {scene_path}: {str(e)}")
+                    
+            return processed_paths
             
         except Exception as e:
             logging.error(f"Failed to process image: {str(e)}")
-            raise Exception(f"Failed to process image: {str(e)}") 
+            raise
+
+    def apply_background(self, foreground: Image.Image, scene_path: str, output_path: str) -> str:
+        """Applique un fond à l'image sans fond"""
+        try:
+            # Créer le dossier de sortie s'il n'existe pas
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            # Charger et préparer l'image de fond
+            background = Image.open(scene_path).convert('RGBA')
+            background = background.resize(foreground.size, Image.Resampling.LANCZOS)
+            
+            # Créer une nouvelle image pour le résultat
+            composite = Image.new('RGBA', foreground.size, (0, 0, 0, 0))
+            composite.paste(background, (0, 0))
+            composite.paste(foreground, (0, 0), foreground)
+            
+            # Convertir en RGB avant de sauvegarder
+            composite = composite.convert('RGB')
+            composite.save(output_path, 'JPEG', quality=95)
+            
+            return output_path
+            
+        except Exception as e:
+            logging.error(f"Failed to apply background: {str(e)}")
+            raise

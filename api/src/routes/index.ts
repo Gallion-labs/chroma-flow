@@ -14,7 +14,7 @@ router.get('/queue/:taskId', QueueController.getTaskStatus);
 router.delete('/queue/:taskId', QueueController.removeTask);
 router.post('/queue/clear', QueueController.clearQueue);
 
-router.get('/images/:id/:type?', ImagesController.getImage);
+router.get('/images/:id', ImagesController.getImage);
 router.get('/images', ImagesController.listImages);
 
 export default router;

@@ -1,23 +1,28 @@
 import { Card, Image, Text, Badge, Group } from '@mantine/core';
+import { useState } from 'react';
 
 interface ImageCardProps {
   image: {
     id: string;
     status: string;
     image_path: string;
+    images: string[];
     created_at: string;
   };
   onClick: () => void;
 }
 
 export function ImageCard({ image, onClick }: ImageCardProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const getImageUrl = () => {
-    const filename = image.image_path.split('/').pop();
-    if (image.status === 'completed') {
+    if(image.images.length > 0) { 
+      const filename = image.images[currentImageIndex].split('/').pop();
       return `/api/images/${filename}`;
+    } else {
+      const filename = image.image_path.split('/').pop();
+      return `/api/images/${filename}?type=original`;
     }
-    // Pour les images en cours de traitement, utiliser l'image originale
-    return `/api/images/${filename}/original`;
   };
 
   return (
@@ -41,7 +46,7 @@ export function ImageCard({ image, onClick }: ImageCardProps) {
           src={getImageUrl()}
           height={160}
           alt="Image preview"
-          fallbackSrc="/placeholder.png" // Optionnel : une image par défaut en cas d'erreur
+          fallbackSrc="/placeholder.png"
         />
       </Card.Section>
 

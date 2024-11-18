@@ -14,6 +14,7 @@ export class PrintController {
   static async printImage(req: Request, res: Response) {
     try {
       const taskId = req.params.id;
+      const selectedVersion = parseInt(req.query.version as string) || 0;
       const taskData = await redis.hget('image_processing_queue', taskId);
       
       if (!taskData) {
@@ -28,12 +29,14 @@ export class PrintController {
         });
       }
 
-      // Construire le chemin de l'image traitée
-      const filename = path.basename(task.image_path);
-      const processedPath = path.resolve(
-        process.env.PROCESSED_FOLDER || path.join(__dirname, '../../../data/processed_images'),
-        `processed_${filename}`
-      );
+      if (!task.images || !task.images.length) {
+        return res.status(400).json({ 
+          error: 'No processed images available' 
+        });
+      }
+
+      // Utiliser la version sélectionnée ou la première par défaut
+      const processedPath = task.images[selectedVersion];
 
       // Vérifier que le fichier existe
       if (!fs.existsSync(processedPath)) {
@@ -50,7 +53,6 @@ export class PrintController {
 
       printProcess.on('close', async (code) => {
         if (code === 0) {
-          // Mettre à jour le statut dans Redis
           task.status = 'printed';
           task.updated_at = new Date().toISOString();
           await redis.hset('image_processing_queue', taskId, JSON.stringify(task));

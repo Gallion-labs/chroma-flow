@@ -40,7 +40,8 @@ class QueueManager:
                 'status': 'queued',
                 'metadata': metadata or {},
                 'created_at': datetime.now().isoformat(),
-                'updated_at': datetime.now().isoformat()
+                'updated_at': datetime.now().isoformat(),
+                'images': []
             }
             
             self.redis_client.hset(
@@ -64,36 +65,35 @@ class QueueManager:
         except Exception as e:
             raise Exception(f"Failed to get next task: {str(e)}")
 
-    def update_task_status(self, task_id: str, status: str, error_message: str = None) -> None:
+    def update_task_status(self, task_id: str, status: str, processed_images: list[str] = None, error_message: str = None) -> None:
         try:
-            logging.info(f"🔄 Updating task {task_id} status to: {status}")
-            
             task_data = self.redis_client.hget(self.queue_key, task_id)
             if not task_data:
-                logging.error(f"❌ Task {task_id} not found in queue")
                 return
-                
+            
             task = json.loads(task_data)
             task['status'] = status
             task['updated_at'] = datetime.now().isoformat()
             
+            if processed_images:
+                task['images'] = processed_images
+            elif status == 'queued':
+                # Pour les nouvelles tâches, initialiser avec l'image originale
+                task['images'] = [task['image_path']]
+            
             if error_message:
                 task['error'] = error_message
-                logging.error(f"⚠️ Task error: {error_message}")
-                
+            
             self.redis_client.hset(
                 self.queue_key,
                 task_id,
                 json.dumps(task)
             )
             
-            # Publier la mise à jour sur le canal Redis
-            logging.info(f"📤 Publishing update to Redis channel")
             self.redis_client.publish('image-processing-updates', json.dumps(task))
-            logging.info(f"✅ Status update complete for task {task_id}")
             
         except Exception as e:
-            logging.error(f"❌ Failed to update task status: {str(e)}")
+            logging.error(f"Failed to update task status: {str(e)}")
             raise
 
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:

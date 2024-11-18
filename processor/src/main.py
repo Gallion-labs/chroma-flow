@@ -72,14 +72,7 @@ class ProcessorService:
             logging.info(f"Processing new image: {image_path}")
             
             # Créer le chemin de sortie
-            filename = os.path.basename(image_path)
-            output_path = os.path.join(
-                str(Path(self.watch_folder).parent / "processed_images"),
-                f"processed_{filename}"
-            )
-            
-            logging.info(f"Original filename: {filename}")
-            logging.info(f"Output path: {output_path}")
+            output_dir = str(Path(self.watch_folder).parent / "processed_images")
             
             # Ajouter l'image à la file d'attente
             task_id = self.queue_manager.add_to_queue(image_path)
@@ -88,21 +81,25 @@ class ProcessorService:
             # Mettre à jour le statut
             self.queue_manager.update_task_status(task_id, 'processing')
             
-            # Traiter l'image
+            # Traiter l'image avec toutes les scènes
             try:
-                processed_path = self.image_processor.process(image_path, output_path)
-                logging.info(f"Image processed and saved to: {processed_path}")
-                self.queue_manager.update_task_status(task_id, 'completed')
+                processed_paths = self.image_processor.process_all_scenes(image_path, output_dir)
+                logging.info(f"Images processed and saved to: {processed_paths}")
+                self.queue_manager.update_task_status(
+                    task_id, 
+                    'completed', 
+                    processed_paths
+                )
                 logging.info(f"Successfully processed: {image_path}")
             except Exception as e:
-                self.queue_manager.update_task_status(task_id, 'failed', str(e))
+                self.queue_manager.update_task_status(task_id, 'failed', error_message=str(e))
                 logging.error(f"Failed to process image: {str(e)}")
                 raise
                 
         except Exception as e:
             logging.error(f"Error in process_new_image: {str(e)}")
             if 'task_id' in locals():
-                self.queue_manager.update_task_status(task_id, 'failed', str(e))
+                self.queue_manager.update_task_status(task_id, 'failed', error_message=str(e))
 
     def start(self):
         try:
