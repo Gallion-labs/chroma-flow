@@ -72,8 +72,8 @@ Thumbs.db
 
 .history
 
-.venv
+.venv/
 
-data/images_to_process/
-data/processed_images/
-data/temp/
+data/images_to_process
+data/processed_images
+data/temp
