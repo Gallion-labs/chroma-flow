@@ -1,0 +1,12 @@
+watch_folder: "../data/images_to_process"
+processed_folder: "../data/processed_images"
+temp_folder: "../data/temp"
+
+printer:
+  default_format: "A4"
+  quality: "high"
+  orientation: "portrait"
+
+queue:
+  cleanup_interval: 24  # heures
+  max_retries: 3 
