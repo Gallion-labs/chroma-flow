@@ -5,7 +5,11 @@ import fs from 'fs';
 export class ImagesController {
   static async getImage(req: Request, res: Response) {
     try {
-      const { id, type } = req.params;
+      let { id, type } = req.params;
+      // Get type from query params if not provided in the url
+      type = req.query.type as string || type;
+      console.log('🔍 Getting image with id:', id, 'and type:', type);
+      
       const projectRoot = path.resolve(__dirname, '../../../');
       
       let imagePath;

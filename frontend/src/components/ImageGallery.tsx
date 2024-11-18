@@ -5,17 +5,20 @@ import { useEffect, useState } from 'react';
 import { clearQueue, fetchImages } from '../services/api';
 import { socket } from '../services/socket';
 import { ImageCard } from './ImageCard';
+import { ImageSlideshow } from './ImageSlideshow';
 
 interface Image {
   id: string;
-  status: string;
+  status: 'pending' | 'processing' | 'completed' | 'printed';
   image_path: string;
   created_at: string;
+  images: string[];
 }
 
 export function ImageGallery() {
   const [images, setImages] = useState<Image[]>([]);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState(0);
 
   useEffect(() => {
     console.log('🔄 Initializing ImageGallery component...');
@@ -54,6 +57,7 @@ export function ImageGallery() {
           ...update
         };
         
+        console.log('✅ New images list:', newImages);
         return newImages.sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
@@ -232,16 +236,9 @@ export function ImageGallery() {
                 marginBottom: '16px'
               }}
             >
-              <img
-                src={selectedImage.status === 'completed' 
-                  ? `/api/images/${selectedImage.image_path.split('/').pop()}`
-                  : `/api/images/${selectedImage.image_path.split('/').pop()}/original`
-                }
-                alt="Preview"
-                style={{ 
-                  width: '100%',
-                  borderRadius: '4px'
-                }}
+              <ImageSlideshow 
+                images={selectedImage.images}
+                onSelect={(index) => setSelectedVersion(index)}
               />
             </Box>
             <Group justify="flex-end" gap="md">
@@ -252,16 +249,18 @@ export function ImageGallery() {
               >
                 Supprimer
               </Button>
-              <Button
-                color="teal"
-                variant="filled"
-                onClick={() => handlePrint(selectedImage)}
-              >
-                {selectedImage.status === 'printed' 
-                  ? 'Imprimer à nouveau'
-                  : 'Valider pour impression'
-                }
-              </Button>
+              {selectedImage.status === 'completed' || selectedImage.status === 'printed' ? (
+                <Button
+                  color="teal"
+                  variant="filled"
+                  onClick={() => handlePrint(selectedImage)}
+                >
+                  {selectedImage.status === 'printed' 
+                    ? 'Imprimer à nouveau'
+                    : 'Valider pour impression'
+                  }
+                </Button>
+              ) : null}
             </Group>
           </>
         )}
