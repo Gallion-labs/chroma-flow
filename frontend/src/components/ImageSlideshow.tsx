@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Button, Group, Image, Text } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 
 interface ImageSlideshowProps {
   images: string[];
@@ -8,6 +9,7 @@ interface ImageSlideshowProps {
 }
 
 export function ImageSlideshow({ images, onSelect }: ImageSlideshowProps) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handlePrevious = () => {
@@ -41,7 +43,7 @@ export function ImageSlideshow({ images, onSelect }: ImageSlideshowProps) {
         <Box style={{ flex: 1 }}>
           <Image
             src={getImageUrl(images[currentIndex])}
-            alt={`Version ${currentIndex + 1}`}
+            alt={t('gallery.preview')}
             radius="md"
           />
         </Box>
@@ -56,7 +58,7 @@ export function ImageSlideshow({ images, onSelect }: ImageSlideshowProps) {
       </Group>
       
       <Text size="sm" ta="center" c="dimmed">
-        Version {currentIndex + 1} sur {images.length}
+        {t('gallery.version', { current: currentIndex + 1, total: images.length })}
       </Text>
     </Box>
   );

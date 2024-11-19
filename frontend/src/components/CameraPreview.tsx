@@ -3,12 +3,14 @@ import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { CountdownTimer } from './CountdownTimer';
 import { IconCamera } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 
 interface CameraPreviewProps {
   onCapture: (imageSrc: string) => void;
 }
 
 export function CameraPreview({ onCapture }: CameraPreviewProps) {
+  const { t } = useTranslation();
   const webcamRef = useRef<Webcam>(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
 
@@ -50,7 +52,7 @@ export function CameraPreview({ onCapture }: CameraPreviewProps) {
             leftSection={<IconCamera size={20} />}
             onClick={handleStartCapture}
           >
-            Lancer le compte à rebours
+            {t('camera.startCountdown')}
           </Button>
         </Group>
       )}

@@ -2,6 +2,7 @@ import { Modal, Button, Group, Image } from '@mantine/core';
 import { useState } from 'react';
 import { CameraPreview } from './CameraPreview';
 import { uploadCapture } from '../services/capture.service';
+import { useTranslation } from 'react-i18next';
 
 interface CameraModalProps {
   opened: boolean;
@@ -9,6 +10,7 @@ interface CameraModalProps {
 }
 
 export function CameraModal({ opened, onClose }: CameraModalProps) {
+  const { t } = useTranslation();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const handleCapture = (imageSrc: string) => {
@@ -32,7 +34,7 @@ export function CameraModal({ opened, onClose }: CameraModalProps) {
       opened={opened}
       onClose={onClose}
       size="xl"
-      title="Prendre une photo"
+      title={t('camera.title')}
       styles={{
         header: {
           backgroundColor: '#25262B',
@@ -47,10 +49,10 @@ export function CameraModal({ opened, onClose }: CameraModalProps) {
           <Image src={capturedImage} radius="md" />
           <Group justify="center" mt="xl">
             <Button color="red" onClick={handleRetry}>
-              Recommencer
+              {t('common.actions.retry')}
             </Button>
             <Button color="teal" onClick={handleAccept}>
-              Valider
+              {t('common.actions.accept')}
             </Button>
           </Group>
         </>

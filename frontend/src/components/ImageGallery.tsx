@@ -1,5 +1,5 @@
-import { Box, Button, Grid, Group, Menu, Modal, ScrollArea, Text } from '@mantine/core';
-import { IconDotsVertical, IconTrash } from '@tabler/icons-react';
+import { Box, Button, Grid, Group, Menu, Modal, ScrollArea, Text, Divider } from '@mantine/core';
+import { IconDotsVertical, IconTrash, IconLanguage } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,8 @@ import { ImageSlideshow } from './ImageSlideshow';
 import { CaptureButton } from './CaptureButton';
 import { CameraModal } from './CameraModal';
 import { useImageSelections } from '../hooks/useImageSelections';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from './LanguageSelector';
 
 interface Image {
   id: string;
@@ -19,12 +21,21 @@ interface Image {
   images: string[];
 }
 
+const languages = [
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' }
+];
+
 export function ImageGallery() {
   const { clearSelections, setImageSelection } = useImageSelections();
   const [images, setImages] = useState<Image[]>([]);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     console.log('🔄 Initializing ImageGallery component...');
@@ -195,12 +206,17 @@ export function ImageGallery() {
     setImageSelection(imageId, version);
   };
 
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('preferred-language', langCode);
+  };
+
   return (
     <Box className="texture" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Box p="md" className="glass" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
         <Group justify="space-between">
           <Text size="xl" fw={700} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-            Images en attente
+            {t('gallery.title')}
           </Text>
           <Group>
             <CaptureButton onClick={() => setIsCameraOpen(true)} />
@@ -211,6 +227,15 @@ export function ImageGallery() {
                 dropdown: {
                   backgroundColor: '#25262B',
                   border: '1px solid rgba(255, 255, 255, 0.05)',
+                },
+                item: {
+                  color: '#C1C2C5',
+                  '&[data-selected]': {
+                    backgroundColor: '#2C2E33',
+                  },
+                },
+                label: {
+                  color: '#909296',
                 }
               }}
             >
@@ -226,12 +251,41 @@ export function ImageGallery() {
               </Menu.Target>
 
               <Menu.Dropdown>
+                <Menu.Label>{t('common.language.select')}</Menu.Label>
+                {languages.map((lang) => (
+                  <Menu.Item
+                    key={lang.code}
+                    leftSection={<Text size="lg">{lang.flag}</Text>}
+                    rightSection={
+                      lang.code === i18n.language && (
+                        <Text size="xs" c="dimmed">✓</Text>
+                      )
+                    }
+                    onClick={() => handleLanguageChange(lang.code)}
+                    data-selected={lang.code === i18n.language}
+                  >
+                    <Group justify="space-between" style={{ flex: 1 }}>
+                      <Text>{lang.name}</Text>
+                      <Text size="xs" c="dimmed">
+                        {t(`common.language.${lang.code}`)}
+                      </Text>
+                    </Group>
+                  </Menu.Item>
+                ))}
+                
+                <Divider 
+                  my="xs" 
+                  style={{ 
+                    borderColor: 'rgba(255, 255, 255, 0.05)' 
+                  }} 
+                />
+                
                 <Menu.Item
                   color="red"
                   leftSection={<IconTrash size={16} />}
                   onClick={handleClearQueue}
                 >
-                  Vider la file d'attente
+                  {t('gallery.clearQueue')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -290,7 +344,7 @@ export function ImageGallery() {
                 variant="filled"
                 onClick={() => handleDelete(selectedImage)}
               >
-                Supprimer
+                {t('gallery.delete')}
               </Button>
               {selectedImage.status === 'completed' || selectedImage.status === 'printed' ? (
                 <Button

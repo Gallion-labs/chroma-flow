@@ -1,13 +1,16 @@
 import { Button, Tooltip } from '@mantine/core';
 import { IconCamera } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 
 interface CaptureButtonProps {
   onClick: () => void;
 }
 
 export function CaptureButton({ onClick }: CaptureButtonProps) {
+  const { t } = useTranslation();
+  
   return (
-    <Tooltip label="Prendre une photo">
+    <Tooltip label={t('camera.tooltip')}>
       <Button
         leftSection={<IconCamera size={20} />}
         variant="gradient"
@@ -15,7 +18,7 @@ export function CaptureButton({ onClick }: CaptureButtonProps) {
         className="hover-lift"
         onClick={onClick}
       >
-        Nouvelle Photo
+        {t('common.actions.capture')}
       </Button>
     </Tooltip>
   );

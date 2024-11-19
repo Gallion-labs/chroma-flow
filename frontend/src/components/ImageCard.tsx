@@ -2,6 +2,7 @@ import { Card, Image, Text, Badge, Group, Tooltip, Loader } from '@mantine/core'
 import { useState, useEffect } from 'react';
 import { IconClick } from '@tabler/icons-react';
 import { useImageSelections } from '../hooks/useImageSelections';
+import { useTranslation } from 'react-i18next';
 
 interface ImageCardProps {
   image: {
@@ -14,22 +15,8 @@ interface ImageCardProps {
   onClick: () => void;
 }
 
-const getStatusTranslation = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return 'En attente';
-    case 'processing':
-      return 'En cours';
-    case 'completed':
-      return 'Terminé';
-    case 'printed':
-      return 'Imprimé';
-    default:
-      return status;
-  }
-};
-
 export function ImageCard({ image, onClick }: ImageCardProps) {
+  const { t } = useTranslation();
   const { getImageSelection } = useImageSelections();
   const [currentImageIndex, setCurrentImageIndex] = useState(() => 
     getImageSelection(image.id)
@@ -42,6 +29,10 @@ export function ImageCard({ image, onClick }: ImageCardProps) {
 
   const isClickable = image.status === 'completed' || image.status === 'printed';
   const isProcessing = image.status === 'processing';
+
+  const getStatusTranslation = (status: string) => {
+    return t(`common.status.${status}`);
+  };
 
   const getImageUrl = () => {
     if(image.images.length > 0) { 
