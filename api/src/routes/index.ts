@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { ConfigController } from '../controllers/config';
 import { ImagesController } from '../controllers/images';
 import { QueueController } from '../controllers/queue';
+import { CaptureController } from '../controllers/capture.controller';
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.post('/queue/clear', QueueController.clearQueue);
 
 router.get('/images/:id', ImagesController.getImage);
 router.get('/images', ImagesController.listImages);
+
+router.post('/capture', CaptureController.saveCapture);
 
 export default router;

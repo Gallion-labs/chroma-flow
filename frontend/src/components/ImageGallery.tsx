@@ -6,6 +6,8 @@ import { clearQueue, fetchImages } from '../services/api';
 import { socket } from '../services/socket';
 import { ImageCard } from './ImageCard';
 import { ImageSlideshow } from './ImageSlideshow';
+import { CaptureButton } from './CaptureButton';
+import { CameraModal } from './CameraModal';
 
 interface Image {
   id: string;
@@ -19,6 +21,7 @@ export function ImageGallery() {
   const [images, setImages] = useState<Image[]>([]);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [selectedVersion, setSelectedVersion] = useState(0);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useEffect(() => {
     console.log('🔄 Initializing ImageGallery component...');
@@ -191,14 +194,17 @@ export function ImageGallery() {
           <Text size="xl" fw={700} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
             Images en attente
           </Text>
-          <Button 
-            color="red" 
-            variant="outline"
-            onClick={handleClearQueue}
-            className="hover-lift"
-          >
-            Vider la file d'attente
-          </Button>
+          <Group>
+            <CaptureButton onClick={() => setIsCameraOpen(true)} />
+            <Button 
+              color="red" 
+              variant="outline"
+              onClick={handleClearQueue}
+              className="hover-lift"
+            >
+              Vider la file d'attente
+            </Button>
+          </Group>
         </Group>
       </Box>
 
@@ -268,6 +274,11 @@ export function ImageGallery() {
           </>
         )}
       </Modal>
+
+      <CameraModal
+        opened={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+      />
     </Box>
   );
 }
