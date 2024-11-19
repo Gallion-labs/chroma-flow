@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-primary: 'Outfit', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', monospace;
+}
+
+body {
+  font-family: var(--font-primary);
+  letter-spacing: -0.02em;
+}
+
+h1, h2, h3, h4, h5, h6, 
+.mantine-Title-root,
+.mantine-Text-root[size="xl"],
+.mantine-Button-root {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+.mantine-Badge-root {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+  font-weight: 500;
+}

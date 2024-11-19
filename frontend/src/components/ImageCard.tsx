@@ -31,14 +31,10 @@ export function ImageCard({ image, onClick }: ImageCardProps) {
       padding="lg" 
       radius="md" 
       onClick={onClick} 
+      className="glass hover-lift"
       style={{ 
         cursor: 'pointer',
-        backgroundColor: '#25262B',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-        }
+        transition: 'all 0.2s ease',
       }}
     >
       <Card.Section>

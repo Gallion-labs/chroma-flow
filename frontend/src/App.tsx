@@ -4,27 +4,31 @@ import { Notifications } from '@mantine/notifications';
 import { ImageGallery } from './components/ImageGallery';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import './styles/texture.css';
+import './styles/fonts.css';
 
 const theme = createTheme({
   primaryColor: 'blue',
-  colors: {
-    dark: [
-      '#C1C2C5',
-      '#A6A7AB',
-      '#909296',
-      '#5C5F66',
-      '#373A40',
-      '#2C2E33',
-      '#25262B',
-      '#1A1B1E',
-      '#141517',
-      '#101113',
-    ],
+  fontFamily: 'var(--font-primary)',
+  headings: {
+    fontFamily: 'var(--font-display)',
+    fontWeight: '600',
   },
   components: {
     Text: {
       defaultProps: {
         c: 'gray.0'
+      }
+    },
+    Button: {
+      defaultProps: {
+        fw: 600
+      },
+      styles: {
+        root: {
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '-0.03em',
+        }
       }
     },
     Card: {
@@ -40,7 +44,10 @@ const theme = createTheme({
     Modal: {
       styles: {
         title: {
-          color: '#C1C2C5'
+          color: '#C1C2C5',
+          fontFamily: 'var(--font-display)',
+          fontWeight: 600,
+          letterSpacing: '-0.03em',
         },
         body: {
           color: '#A6A7AB'

@@ -185,14 +185,17 @@ export function ImageGallery() {
   };
 
   return (
-    <Box style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#1A1B1E' }}>
-      <Box p="md" style={{ borderBottom: '1px solid #2C2E33', background: '#25262B' }}>
+    <Box className="texture" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box p="md" className="glass" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
         <Group justify="space-between">
-          <Text size="xl" fw={700}>Images en attente</Text>
+          <Text size="xl" fw={700} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+            Images en attente
+          </Text>
           <Button 
             color="red" 
             variant="outline"
             onClick={handleClearQueue}
+            className="hover-lift"
           >
             Vider la file d'attente
           </Button>
