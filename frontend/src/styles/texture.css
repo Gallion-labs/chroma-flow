@@ -24,3 +24,13 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
+  
+  .click-indicator {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  
+  .hover-lift:hover .click-indicator {
+    opacity: 1;
+    transform: scale(1);
+  }

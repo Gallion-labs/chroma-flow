@@ -1,4 +1,5 @@
-import { Box, Button, Grid, Group, Modal, ScrollArea, Text } from '@mantine/core';
+import { Box, Button, Grid, Group, Menu, Modal, ScrollArea, Text } from '@mantine/core';
+import { IconDotsVertical, IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { ImageCard } from './ImageCard';
 import { ImageSlideshow } from './ImageSlideshow';
 import { CaptureButton } from './CaptureButton';
 import { CameraModal } from './CameraModal';
+import { useImageSelections } from '../hooks/useImageSelections';
 
 interface Image {
   id: string;
@@ -18,6 +20,7 @@ interface Image {
 }
 
 export function ImageGallery() {
+  const { clearSelections, setImageSelection } = useImageSelections();
   const [images, setImages] = useState<Image[]>([]);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [selectedVersion, setSelectedVersion] = useState(0);
@@ -146,6 +149,7 @@ export function ImageGallery() {
         try {
           await clearQueue();
           setImages([]);
+          clearSelections();
           notifications.show({
             title: 'Succès',
             message: 'La file d\'attente a été vidée',
@@ -187,6 +191,10 @@ export function ImageGallery() {
     });
   };
 
+  const handleVersionSelect = (imageId: string, version: number) => {
+    setImageSelection(imageId, version);
+  };
+
   return (
     <Box className="texture" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Box p="md" className="glass" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
@@ -196,14 +204,37 @@ export function ImageGallery() {
           </Text>
           <Group>
             <CaptureButton onClick={() => setIsCameraOpen(true)} />
-            <Button 
-              color="red" 
-              variant="outline"
-              onClick={handleClearQueue}
-              className="hover-lift"
+            <Menu 
+              position="bottom-end" 
+              shadow="md"
+              styles={{
+                dropdown: {
+                  backgroundColor: '#25262B',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                }
+              }}
             >
-              Vider la file d'attente
-            </Button>
+              <Menu.Target>
+                <Button 
+                  variant="subtle" 
+                  color="gray"
+                  size="md"
+                  className="hover-lift"
+                >
+                  <IconDotsVertical size={20} />
+                </Button>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Item
+                  color="red"
+                  leftSection={<IconTrash size={16} />}
+                  onClick={handleClearQueue}
+                >
+                  Vider la file d'attente
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Group>
       </Box>
@@ -247,7 +278,10 @@ export function ImageGallery() {
             >
               <ImageSlideshow 
                 images={selectedImage.images}
-                onSelect={(index) => setSelectedVersion(index)}
+                onSelect={(index) => {
+                  setSelectedVersion(index);
+                  handleVersionSelect(selectedImage.id, index);
+                }}
               />
             </Box>
             <Group justify="flex-end" gap="md">

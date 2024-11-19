@@ -1,5 +1,7 @@
-import { Card, Image, Text, Badge, Group } from '@mantine/core';
-import { useState } from 'react';
+import { Card, Image, Text, Badge, Group, Tooltip, Loader } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { IconClick } from '@tabler/icons-react';
+import { useImageSelections } from '../hooks/useImageSelections';
 
 interface ImageCardProps {
   image: {
@@ -12,8 +14,34 @@ interface ImageCardProps {
   onClick: () => void;
 }
 
+const getStatusTranslation = (status: string) => {
+  switch (status) {
+    case 'pending':
+      return 'En attente';
+    case 'processing':
+      return 'En cours';
+    case 'completed':
+      return 'Terminé';
+    case 'printed':
+      return 'Imprimé';
+    default:
+      return status;
+  }
+};
+
 export function ImageCard({ image, onClick }: ImageCardProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { getImageSelection } = useImageSelections();
+  const [currentImageIndex, setCurrentImageIndex] = useState(() => 
+    getImageSelection(image.id)
+  );
+
+  useEffect(() => {
+    const selectedIndex = getImageSelection(image.id);
+    setCurrentImageIndex(selectedIndex);
+  }, [image.id, getImageSelection]);
+
+  const isClickable = image.status === 'completed' || image.status === 'printed';
+  const isProcessing = image.status === 'processing';
 
   const getImageUrl = () => {
     if(image.images.length > 0) { 
@@ -25,25 +53,65 @@ export function ImageCard({ image, onClick }: ImageCardProps) {
     }
   };
 
-  return (
+  const card = (
     <Card 
       shadow="sm" 
       padding="lg" 
       radius="md" 
-      onClick={onClick} 
-      className="glass hover-lift"
+      onClick={isClickable ? onClick : undefined} 
+      className={`glass ${isClickable ? 'hover-lift' : ''}`}
       style={{ 
-        cursor: 'pointer',
+        cursor: isClickable ? 'pointer' : 'default',
         transition: 'all 0.2s ease',
+        opacity: isClickable ? 1 : 0.7,
+        position: 'relative',
       }}
     >
-      <Card.Section>
+      <Card.Section style={{ position: 'relative' }}>
         <Image
           src={getImageUrl()}
           height={160}
           alt="Image preview"
           fallbackSrc="/placeholder.png"
         />
+        {isClickable && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              background: 'rgba(0, 0, 0, 0.6)',
+              borderRadius: '50%',
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              transition: 'transform 0.2s ease',
+            }}
+            className="click-indicator"
+          >
+            <IconClick size={20} />
+          </div>
+        )}
+        {isProcessing && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(2px)',
+            }}
+          >
+            <Loader color="blue" size="lg" type="dots" />
+          </div>
+        )}
       </Card.Section>
 
       <Group justify="space-between" mt="md" mb="xs">
@@ -55,9 +123,19 @@ export function ImageCard({ image, onClick }: ImageCardProps) {
           image.status === 'printed' ? 'blue' :
           'yellow'
         }>
-          {image.status}
+          {getStatusTranslation(image.status)}
         </Badge>
       </Group>
     </Card>
   );
+
+  return isClickable ? (
+    <Tooltip 
+      label="Cliquez pour voir les détails" 
+      position="bottom"
+      transitionProps={{ transition: 'fade', duration: 200 }}
+    >
+      {card}
+    </Tooltip>
+  ) : card;
 }

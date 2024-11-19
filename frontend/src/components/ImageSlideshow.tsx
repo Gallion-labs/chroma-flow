@@ -11,13 +11,15 @@ export function ImageSlideshow({ images, onSelect }: ImageSlideshowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-    onSelect?.(currentIndex);
+    const newIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+    setCurrentIndex(newIndex);
+    onSelect?.(newIndex);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-    onSelect?.(currentIndex);
+    const newIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+    setCurrentIndex(newIndex);
+    onSelect?.(newIndex);
   };
 
   const getImageUrl = (path: string) => {
